@@ -29,7 +29,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
                 'score': score,
                 'max_score': s.max_score,
                 'name': s.location[2],
-                'output': output,
+                'output': "suppressed output.", # hotfix: used to be output, wwhich leaked tests.
                 'visibility': s.visibility
             }
         )
