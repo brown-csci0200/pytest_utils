@@ -12,7 +12,6 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
     json_results = {'tests': []}
 
     all_tests = []
-    #import pdb; pdb.set_trace()
     def _add(all_tests, new_tests, is_error):
         for t in new_tests:
             t.is_error = is_error
@@ -27,21 +26,35 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
         _add(all_tests, terminalreporter.stats['error'], is_error=True)
 
     for s in all_tests:
-        output = ''
-        score = s.max_score
-        if (s.outcome == 'failed'):
+        if s.outcome == "failed":
+            output = ''
             score = 0
-            output = s.longrepr.reprcrash.__str__() if s.is_error else "Detailed output is hidden."
+            max_score = s.max_score if hasattr(s, "max_score") else 1
+            visibility = s.visibility if hasattr(s, "visibility") else "visible"
+
+            if s.is_error:
+                if hasattr(s.longrepr, "reprcrash"):
+                    output = s.longrepr.reprcrash.__str__()
+                else:
+                    output = s.longrepr.longrepr
+            else:
+                output = "Detailed output is hidden."
+
             #output = str(s.longrepr.chain[0][0].reprentries[0])
+        else:
+            output = ''
+            score = s.max_score
+            max_score = s.max_score
+            visibility = s.visibility
 
         json_results["tests"].append(
             {
                 'score': score,
-                'max_score': s.max_score,
+                'max_score': max_score,
                 'name': s.location[2],
                 #'output': "Suppressed output.",
                 'output': output, #TODO handle this in autograde.py instead so we have more options?
-                'visibility': s.visibility
+                'visibility': visibility,
             }
         )
 
